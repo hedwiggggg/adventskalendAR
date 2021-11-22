@@ -1,0 +1,14 @@
+.qrcode {
+  position: relative;
+
+  display: flex;
+  background: #fff;
+
+  width: 70mm;
+  height: 74mm;
+
+  box-sizing: border-box;
+
+  justify-content: center;
+  align-items: flex-end;
+}
