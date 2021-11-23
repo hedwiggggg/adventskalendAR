@@ -1,3 +1,6 @@
+import { scanImageData } from 'zbar.wasm';
+import type { Point } from "zbar.wasm";
+
 type RoundedRectProps = {
   posX: number;
   posY: number;
@@ -8,24 +11,99 @@ type RoundedRectProps = {
   radius: number;
 };
 
+type QRCodePoints = {
+  a: Point;
+  b: Point;
+  c: Point;
+  d: Point;
+};
+
+type QRCodeScanRect = {
+  posX: number;
+  posY: number;
+
+  width: number;
+  height: number;
+};
+
+type QRCodeScanResult = {
+  data: string;
+  points: QRCodePoints;
+};
+
 declare global {
   interface CanvasRenderingContext2D {
-    roundedRect(props: RoundedRectProps): void;
+    roundedRect(rect: QRCodeScanRect, radius: number): void;
     drawVideoFrameCoverFit(video: HTMLVideoElement): void;
+    createScanRect(width: number, height: number): QRCodeScanRect;
+    scanQRCode(rect: QRCodeScanRect): Promise<QRCodeScanResult | undefined>;
   }
 }
 
 if (typeof document !== 'undefined') {
+  if (!('createScanRect' in CanvasRenderingContext2D.prototype)) {
+    CanvasRenderingContext2D.prototype.createScanRect = (
+      function createScanRect(width, height) {
+        return {
+          width,
+          height,
+      
+          posX: (this.canvas.width - width) / 2,
+          posY: (this.canvas.height - height) / 2,
+        };
+      }
+    );
+  }
+
+  if (!('scanQRCode' in CanvasRenderingContext2D.prototype)) {
+    const scanInterval = 50;
+    let lastScan: number;
+
+    CanvasRenderingContext2D.prototype.scanQRCode = (
+      async function scanQRCode(rect) {
+        const now = Date.now();
+
+        if (now - lastScan < scanInterval)
+          return;
+
+        else
+          lastScan = now;
+
+        const image = this.getImageData(
+          rect.posX, rect.posY,
+          rect.height, rect.width,
+        );
+  
+        const [scanSymbol] = await scanImageData(image);
+
+        if (scanSymbol) {
+          const [a, c, d, b] = scanSymbol.points.map(
+            (p) => ({
+              x: p.x + rect.posX,
+              y: p.y + rect.posY,
+            })
+          );
+
+          return {
+            data: scanSymbol.decode(),
+            points: { a, c, d, b },
+          };
+        }
+
+        return;
+      }
+    );
+  }
+
   if (!('roundedRect' in CanvasRenderingContext2D.prototype)) {
     const rr_halfRadians = (2 * Math.PI) / 2;
     const rr_quarterRadians = (2 * Math.PI) / 4;  
   
     CanvasRenderingContext2D.prototype.roundedRect = (
-      function drawRoundedRectangle(props) {
-        const { posX, posY } = props;
-        const { width, height } = props;
-        const { radius } = props;
-  
+      function drawRoundedRectangle(rect, radius) {
+        const { posX, posY } = rect;
+        const { width, height } = rect;
+
         this.arc(radius + posX, radius + posY, radius, -rr_quarterRadians, rr_halfRadians, true);
         this.lineTo(posX, posY + height - radius);
         this.arc(radius + posX, height - radius + posY, radius, rr_halfRadians, rr_quarterRadians, true);

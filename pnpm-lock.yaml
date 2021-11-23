@@ -5,6 +5,7 @@ specifiers:
   '@types/node': 16.11.9
   '@types/qrcode': ^1.4.1
   '@types/react': 17.0.35
+  '@types/throttle-debounce': ^2.1.0
   clsx: ^1.1.1
   concurrently: ^6.4.0
   eslint: 7.32.0
@@ -16,6 +17,7 @@ specifiers:
   react: 17.0.2
   react-dom: 17.0.2
   sass: ^1.43.4
+  throttle-debounce: ^3.0.1
   typed-scss-modules: ^4.1.1
   typescript: 4.5.2
   zbar.wasm: ^2.0.3
@@ -26,6 +28,7 @@ dependencies:
   paper-css: 0.4.1
   react: 17.0.2
   react-dom: 17.0.2_react@17.0.2
+  throttle-debounce: 3.0.1
   zbar.wasm: 2.0.3
 
 devDependencies:
@@ -33,6 +36,7 @@ devDependencies:
   '@types/node': 16.11.9
   '@types/qrcode': 1.4.1
   '@types/react': 17.0.35
+  '@types/throttle-debounce': 2.1.0
   concurrently: 6.4.0
   eslint: 7.32.0
   eslint-config-next: 12.0.4_97474a4dbadaeb5c2c29b7d438fbde20
@@ -378,6 +382,10 @@ packages:
 
   /@types/scheduler/0.16.2:
     resolution: {integrity: sha512-hppQEBDmlwhFAXKJX2KnWLYu5yMfi91yazPb2l+lbJiwW+wdo1gNeRA+3RgNSO39WYX2euey41KEwnqesU2Jew==}
+    dev: true
+
+  /@types/throttle-debounce/2.1.0:
+    resolution: {integrity: sha512-5eQEtSCoESnh2FsiLTxE121IiE60hnMqcb435fShf4bpLRjEu1Eoekht23y6zXS9Ts3l+Szu3TARnTsA0GkOkQ==}
     dev: true
 
   /@typescript-eslint/parser/4.33.0_eslint@7.32.0+typescript@4.5.2:
@@ -3246,6 +3254,11 @@ packages:
   /text-table/0.2.0:
     resolution: {integrity: sha1-f17oI66AUgfACvLfSoTsP8+lcLQ=}
     dev: true
+
+  /throttle-debounce/3.0.1:
+    resolution: {integrity: sha512-dTEWWNu6JmeVXY0ZYoPuH5cRIwc0MeGbJwah9KUNYSJwommQpCzTySTpEe8Gs1J23aeWEuAobe4Ag7EHVt/LOg==}
+    engines: {node: '>=10'}
+    dev: false
 
   /timers-browserify/2.0.12:
     resolution: {integrity: sha512-9phl76Cqm6FhSX9Xe1ZUAMLtm1BLkKj2Qd5ApyWkXzsMRaA7dgr81kf4wJmQf/hAvg8EEyJxDo3du/0KlhPiKQ==}

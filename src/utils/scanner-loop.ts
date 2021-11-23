@@ -1,4 +1,4 @@
-import { scanImageData } from 'zbar.wasm';
+import { debounce } from 'throttle-debounce';
 import { transform2d } from '~/utils/matrix-operations';
 
 import '~/utils/canvas-extension';
@@ -18,29 +18,27 @@ export default (
     const { onScanStart } = props;
 
     let isRunning = true;
-    let hideOverlayTimeout: NodeJS.Timeout | undefined;
     let lastScannedHash: string | undefined;
 
+    const debouncedHideOverlay = debounce(200, () => {
+      if (overlayRef?.current)
+        overlayRef.current.style.opacity = '0';
+
+      lastScannedHash = undefined;
+    });
+
     async function scannerLoop() {
-      if (!overlayRef?.current || !canvasRef?.current || !cameraVideoRef?.current) {
+      const ctx = canvasRef?.current?.getContext('2d');
+      const skip = false
+        || !overlayRef?.current
+        || !canvasRef?.current
+        || !cameraVideoRef?.current
+        || !ctx;
+
+      if (skip)
         return requestAnimationFrame(scannerLoop);
-      }
 
-      const ctx = canvasRef.current.getContext('2d');
-      const scanRect = {
-        canvas: canvasRef.current,
-
-        width: 300,
-        height: 300,
-
-        get posX() {
-          return (this.canvas.width - this.width) / 2;
-        },
-
-        get posY() {
-          return (this.canvas.height - this.height) / 2;
-        }
-      };
+      const scanRect = ctx.createScanRect(300, 300);
 
       canvasRef.current.width = window.innerWidth;
       canvasRef.current.height = window.innerHeight;
@@ -48,80 +46,38 @@ export default (
       overlayRef.current.width = scanRect.width;
       overlayRef.current.height = scanRect.height;
 
-      if (!ctx) {
-        return requestAnimationFrame(scannerLoop);
-      }
-
       ctx.drawVideoFrameCoverFit(cameraVideoRef.current);
 
-      const image = ctx.getImageData(
-        scanRect.posX,
-        scanRect.posY,
-        scanRect.height,
-        scanRect.width,
-      );
+      const code = await ctx.scanQRCode(scanRect);
 
-      const [scanSymbol] = await scanImageData(image);
-
-      ctx.strokeStyle = "#d4c7d9";
-      ctx.lineWidth = 6;
-      ctx.beginPath();
-
-      ctx.roundedRect({
-        posX: scanRect.posX,
-        posY: scanRect.posY,
-
-        width: scanRect.width,
-        height: scanRect.height,
-
-        radius: 16,
-      });
-
-      ctx.stroke();
-
-      if (scanSymbol) {
-        const scannedHash = scanSymbol.decode();
-        const [a, b, c, d] = [...scanSymbol.points].map(
-          (p) => ({
-            x: p.x + scanRect.posX,
-            y: p.y + scanRect.posY
-          })
-        );
-
+      if (code) {
         const matrix = transform2d(
           scanRect.width,
           scanRect.height,
 
-          a.x, a.y,
-          d.x, d.y,
-          b.x, b.y,
-          c.x, c.y,
+          code.points.a.x, code.points.a.y,
+          code.points.b.x, code.points.b.y,
+          code.points.c.x, code.points.c.y,
+          code.points.d.x, code.points.d.y,
         );
 
         overlayRef.current.style.opacity = '1';
         overlayRef.current.style.transform = `matrix3d(${matrix.join(', ')})`;
 
-        if (hideOverlayTimeout) {
-          clearTimeout(hideOverlayTimeout);
-          hideOverlayTimeout = undefined;
-        }
+        debouncedHideOverlay();
 
-        if (scannedHash !== lastScannedHash) {
-          lastScannedHash = scannedHash;
-          onScanStart(scannedHash, overlayRef.current);
-        }
-      } else {
-        if (!hideOverlayTimeout && lastScannedHash) {          
-          const hideOverlay = () => {
-            if (overlayRef?.current)
-              overlayRef.current.style.opacity = '0';
-
-            lastScannedHash = undefined;
-          }
-
-          hideOverlayTimeout = setTimeout(hideOverlay, 200);
+        if (code.data !== lastScannedHash) {
+          lastScannedHash = code.data;
+          onScanStart(code.data, overlayRef.current);
         }
       }
+
+      ctx.strokeStyle = "#d4c7d9";
+      ctx.lineWidth = 6;
+
+      ctx.beginPath();
+      ctx.roundedRect(scanRect, 16);
+      ctx.stroke();
 
       if (isRunning) {
         requestAnimationFrame(scannerLoop);

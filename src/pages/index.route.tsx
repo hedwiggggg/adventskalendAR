@@ -4,6 +4,7 @@ import { getDays } from '~/utils/days-map';
 import useScanner from '~/hooks/use-scanner';
 import styles from './styles.module.scss';
 
+import Head from 'next/head';
 import loadingGif from '~/assets/loading.gif';
 
 import type { GetStaticProps } from 'next';
@@ -38,6 +39,10 @@ export default (
 
     return (
       <div className={styles.container}>
+        <Head>
+          <link rel="preload" as="image" href={loadingGif.src} />
+        </Head>
+
         <video
           ref={scanner.refs.video}
           className={styles.video}
