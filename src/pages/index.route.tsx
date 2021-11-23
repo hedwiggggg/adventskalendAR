@@ -9,43 +9,30 @@ import loadingGif from '~/assets/loading.gif';
 import type { GetStaticProps } from 'next';
 import type { Days } from '~/utils/days-map';
 
+const overlayStyles = {
+  backgroundImage: `url(${loadingGif.src})`,
+};
+
 export default (
   function Page(props: PageProps) {
     const { days } = props;
     const scanner = useScanner({
-      onReady: useCallback(
-        () => console.log('onReady', props),
-        [days],
-      ),
-
       onScanStart: useCallback(
-        (hash) => {
-          if (scanner.refs.video.current)
-            scanner.refs.video.current.src = '';
+        (hash, overlayVideo) => {
+          overlayVideo.src = '';
 
           if (hash in days) {
-            console.log('match', hash);
-
             import('~/__generated/' + hash + '.mp4')
               .then(({ default: video }) => {
-                console.log(video);
-
-                if (scanner.refs.video.current) {
-                  scanner.refs.video.current.src = video;
-                  scanner.refs.video.current.autoplay = true;
-                  scanner.refs.video.current.muted = true;
-                  scanner.refs.video.current.loop = true;
-                }
+                overlayVideo.src = video;
+                overlayVideo.autoplay = true;
+                overlayVideo.muted = true;
+                overlayVideo.loop = true;
               })
           }
         },
 
         [days],
-      ),
-
-      onScanEnd: useCallback(
-        () => {},
-        [],
       ),
     });
 
@@ -54,10 +41,7 @@ export default (
         <video
           ref={scanner.refs.video}
           className={styles.video}
-
-          style={{
-            backgroundImage: `url(${loadingGif.src})`,
-          }}
+          style={overlayStyles}
         
           disableRemotePlayback
           autoPlay

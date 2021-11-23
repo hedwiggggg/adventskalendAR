@@ -4,20 +4,16 @@ import useCameraVideo from "./use-camera-video";
 import createScannerLoop from "~/utils/scanner-loop";
 
 type UseScannerProps = {
-  onReady: () => void;
-  onScanStart: (hash: string) => void;
-  onScanEnd: () => void;
+  onScanStart: (hash: string, overlayVideo: HTMLVideoElement) => void;
 };
 
 export default (
   function useScanner(props: UseScannerProps) {
-    const { onReady } = props;
     const { onScanStart } = props;
-    const { onScanEnd } = props;
   
     const overlayRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const cameraVideoRef = useCameraVideo({ onReady });
+    const cameraVideoRef = useCameraVideo({ onReady: () => {} });
   
     useEffect(
       function onMount() {
@@ -25,9 +21,7 @@ export default (
           overlayRef,
           canvasRef,
           cameraVideoRef,
-
           onScanStart,
-          onScanEnd,
         });
   
         return () => stopScannerLoop();

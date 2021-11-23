@@ -7,9 +7,7 @@ type CreateDrawLoopProps = {
   cameraVideoRef?: React.RefObject<HTMLVideoElement>;
   overlayRef?: React.RefObject<HTMLVideoElement>;
   canvasRef?: React.RefObject<HTMLCanvasElement>;
-
-  onScanStart: (hash: string) => void;
-  onScanEnd: () => void;
+  onScanStart: (hash: string, overlayVideo: HTMLVideoElement) => void;
 }
 
 export default (
@@ -18,7 +16,6 @@ export default (
     const { cameraVideoRef } = props;
 
     const { onScanStart } = props;
-    const { onScanEnd } = props;
 
     let isRunning = true;
     let hideOverlayTimeout: NodeJS.Timeout | undefined;
@@ -111,7 +108,7 @@ export default (
 
         if (scannedHash !== lastScannedHash) {
           lastScannedHash = scannedHash;
-          onScanStart(scannedHash);
+          onScanStart(scannedHash, overlayRef.current);
         }
       } else {
         if (!hideOverlayTimeout && lastScannedHash) {          
@@ -120,7 +117,6 @@ export default (
               overlayRef.current.style.opacity = '0';
 
             lastScannedHash = undefined;
-            onScanEnd();        
           }
 
           hideOverlayTimeout = setTimeout(hideOverlay, 200);

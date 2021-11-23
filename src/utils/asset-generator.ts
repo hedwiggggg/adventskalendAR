@@ -19,6 +19,7 @@ type Video = {
 
 export function getVideos(): Video[] {
   const videos = fs.readdirSync(inputPath)
+    .filter((videoName) => videoName.endsWith('.mp4'))
     .map((videoName) => ({
       hash: crypto
         .createHash('md5')
