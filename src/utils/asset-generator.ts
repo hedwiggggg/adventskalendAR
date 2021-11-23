@@ -42,7 +42,10 @@ export async function compressVideo(props: CompressVideoProps) {
   const { video } = props;
 
   const videoInput = path.join(video.inputPath, video.videoName);
-  const videoOutput = path.join(video.outputPath, `${video.hash}.mp4`);      
+  const videoOutput = path.join(video.outputPath, `${video.hash}.mp4`);
+  
+  if (fs.existsSync(videoOutput))
+    return;
 
   const command = [
     ffmpegPath,
@@ -73,6 +76,9 @@ export async function generateQRCode(props: GenerateQRCodeProps) {
 
   const qrPath = path.join(video.outputPath, `${video.hash}.png`);
   const qrText = video.hash;
+
+  if (fs.existsSync(qrPath))
+    return;
 
   await QRCode.toFile(qrPath, qrText, {
     errorCorrectionLevel: 'high',
