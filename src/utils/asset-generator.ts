@@ -51,20 +51,27 @@ export async function compressVideo(props: CompressVideoProps) {
     ffmpegPath,
     
     '-n',
-    '-i', videoInput,
+    `-i '${videoInput}'`,
     '-vcodec', 'libx264',
     '-s', '300x300',
     '-crf', '25',
     '-an',
 
-    videoOutput,
+    `'${videoOutput}'`,
   ];
 
   try {
+    console.log('Compressing video:', video.videoName);
+
     execSync(command.join(' '), {
       stdio: ['pipe', 'pipe', 'ignore'],
     });
-  } catch (error) { }
+
+    console.log('Compressed video:', videoOutput);
+  } catch (error) {
+    console.error('Failed to compress video:', video.videoName);
+    console.error(error);
+  }
 }
 
 type GenerateQRCodeProps = {
