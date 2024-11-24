@@ -38,7 +38,10 @@ export default (
       if (skip)
         return requestAnimationFrame(scannerLoop);
 
-      const scanRect = ctx.createScanRect(300, 300);
+      const sw = window.innerWidth - 32;
+      const sh = window.innerHeight - 32;
+      const smin = Math.min(sw, sh);
+      const scanRect = ctx.createScanRect(smin, smin);
 
       canvasRef.current.width = window.innerWidth;
       canvasRef.current.height = window.innerHeight;
