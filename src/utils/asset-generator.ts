@@ -53,7 +53,7 @@ export async function compressVideo(props: CompressVideoProps) {
     '-n',
     `-i '${videoInput}'`,
     '-vcodec', 'libx264',
-    '-s', '300x300',
+    '-s', '600x600',
     '-crf', '25',
     '-an',
 
